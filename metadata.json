@@ -1,0 +1,6 @@
+{
+  "name": "CyberShield AI",
+  "description": "Cybersecurity Awareness & Digital Threat Detection Platform with AI message analysis, URL security scanner, and image authenticity verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
