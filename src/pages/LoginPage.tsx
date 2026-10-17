@@ -111,13 +111,13 @@ export const LoginPage: React.FC = () => {
   const handleFillPassword = () => {
     setPassword('hemlo@guys123');
     if (!email) {
-      setEmail('admin@cybershield.ai');
+      setEmail('admin@trustlens.ai');
     }
     setError(null);
   };
 
   const handleQuickUnlock = async () => {
-    const targetEmail = email.trim() || 'admin@cybershield.ai';
+    const targetEmail = email.trim() || 'admin@trustlens.ai';
     setEmail(targetEmail);
     setPassword('hemlo@guys123');
     setLoading(true);
@@ -147,7 +147,7 @@ export const LoginPage: React.FC = () => {
           <div className="absolute inset-0 opacity-25">
             <img
               src={ASSETS.hero}
-              alt="CyberShield Authentication Protection"
+              alt="Trust Lens Authentication Protection"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -322,7 +322,7 @@ export const LoginPage: React.FC = () => {
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@cybershield.ai, sec ops admin, or your email"
+                  placeholder="admin@trustlens.ai, sec ops admin, or your email"
                   className="w-full bg-[#080D1A] border border-slate-700/80 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />

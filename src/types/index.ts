@@ -62,3 +62,79 @@ export interface ChatMessage {
   timestamp: string;
   suggestedFollowUps?: string[];
 }
+
+// ==========================================
+// FACT-CHECKING SYSTEM TYPES
+// ==========================================
+
+export type FactCheckVerdict = 'SUPPORTED' | 'CONTRADICTED' | 'UNVERIFIED' | 'MIXED';
+
+export type ReputationTier =
+  | 'wire_or_factchecker'
+  | 'institutional_academic'
+  | 'major_news'
+  | 'general_web';
+
+export interface SourceEvidence {
+  id: string;
+  url: string;
+  title: string;
+  snippet: string;
+  contentExcerpt?: string;
+  sourceType: 'search_snippet' | 'extracted_article';
+  domain: string;
+  publicationDate?: string | null;
+  retrievedAt: string;
+  rankScore: number;
+  rankReasons: string[];
+  isPrimarySource?: boolean;
+  reputationTier: ReputationTier;
+}
+
+export interface ClaimCitation {
+  sourceId: string;
+  url: string;
+  title: string;
+  quoteOrEvidence: string;
+}
+
+export interface ExtractedClaim {
+  id: string;
+  claimText: string;
+  searchQuery?: string;
+  verdict: FactCheckVerdict;
+  explanation: string;
+  missingContext?: string | null;
+  citations: ClaimCitation[];
+  sourcesSearched: SourceEvidence[];
+  searchStatus: 'SUCCESS' | 'NO_RESULTS' | 'FAILED';
+}
+
+export interface OverallAssessment {
+  status: 'SUPPORTED' | 'CONTRADICTED' | 'UNVERIFIED' | 'MIXED' | 'INCOMPLETE';
+  summary: string;
+  totalClaims: number;
+  supportedCount: number;
+  contradictedCount: number;
+  unverifiedCount: number;
+  mixedCount: number;
+  ruleApplied: string;
+}
+
+export interface FactCheckReport {
+  id: string;
+  inputType: 'text' | 'url';
+  rawInput: string;
+  extractedArticleTitle?: string;
+  extractedArticleContent?: string;
+  claims: ExtractedClaim[];
+  overall: OverallAssessment;
+  modelUsed: string;
+  aiStatus: 'ACTIVE' | 'UNAVAILABLE' | 'ERROR';
+  aiStatusMessage?: string;
+  checkedAt: string;
+  isDemoExample?: boolean;
+  processingTimeMs?: number;
+  warning?: string;
+}
+

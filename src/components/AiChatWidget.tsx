@@ -11,7 +11,7 @@ export const AiChatWidget: React.FC = () => {
     {
       id: 'msg-welcome',
       sender: 'bot',
-      text: "Hello, I am your CyberShield AI Security Assistant. You can ask me how to identify phishing scams, what to do if you clicked an unknown link, or how to interpret risk indicators.",
+      text: "Hello, I am your Trust Lens Verification Assistant. You can ask me how to check factual claims, interpret source evidence, or verify article URLs.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -94,10 +94,10 @@ export const AiChatWidget: React.FC = () => {
             setIsMinimized(false);
           }}
           className="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-semibold text-xs tracking-wide rounded-full shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-          aria-label="Open CyberShield AI Assistant"
+          aria-label="Open Trust Lens Assistant"
         >
           <Sparkles className="w-4 h-4 text-slate-950" />
-          <span>Ask CyberShield AI</span>
+          <span>Ask Trust Lens</span>
         </button>
       )}
 
@@ -116,7 +116,7 @@ export const AiChatWidget: React.FC = () => {
               </div>
               <div>
                 <span className="font-display text-xs font-bold text-white block">
-                  CyberShield Assistant
+                  Trust Lens Assistant
                 </span>
                 <span className="text-[10px] font-mono text-cyan-400 block -mt-0.5">
                   AI Digital Safety Guide

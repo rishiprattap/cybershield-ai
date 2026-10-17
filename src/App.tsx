@@ -18,27 +18,22 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { FactCheckPage } from './pages/FactCheckPage';
 
 function AppRoutes() {
-  const { user } = useAuth();
-
   return (
     <Routes>
-      {/* Login page appears first at root '/' for visitors */}
-      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      {/* Public Fact-Checking Page at root for instant hackathon evaluation */}
+      <Route path="/" element={<FactCheckPage />} />
+      <Route path="/check-claim" element={<FactCheckPage />} />
       <Route path="/home" element={<Home />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/analyze/message" element={<MessageAnalysisPage />} />
       <Route path="/analyze/url" element={<UrlScannerPage />} />
       <Route path="/analyze/image" element={<ImageAnalysisPage />} />
       <Route path="/results/:id" element={<AnalysisResultPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/academy" element={<AcademyPage />} />
-      <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
-      <Route path="/admin" element={<AdminDashboardPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

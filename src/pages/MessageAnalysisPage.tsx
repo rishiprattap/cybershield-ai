@@ -68,7 +68,7 @@ export const MessageAnalysisPage: React.FC = () => {
 
   const handleCopyVerdict = () => {
     if (!result) return;
-    navigator.clipboard.writeText(`CyberShield AI Analysis [${result.riskLevel}]: ${result.verdict}\n\nSummary: ${result.summary}`);
+    navigator.clipboard.writeText(`Trust Lens Analysis [${result.riskLevel}]: ${result.verdict}\n\nSummary: ${result.summary}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

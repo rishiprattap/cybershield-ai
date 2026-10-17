@@ -73,11 +73,11 @@ export const Home: React.FC = () => {
   };
 
   const handleDemoLogin = async () => {
-    setLoginEmail('admin@cybershield.ai');
+    setLoginEmail('admin@trustlens.ai');
     setLoginPassword('hemlo@guys123');
     setLoginLoading(true);
     setLoginError(null);
-    const res = await login('admin@cybershield.ai', 'hemlo@guys123');
+    const res = await login('admin@trustlens.ai', 'hemlo@guys123');
     setLoginLoading(false);
     if (!res.success) {
       setLoginError(res.error || 'Authentication failed.');
@@ -136,30 +136,30 @@ export const Home: React.FC = () => {
               </div>
 
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] text-balance">
-                Think Before You{' '}
+                Verify Factual Claims With{' '}
                 <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">
-                  Click.
+                  Web Evidence.
                 </span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
-                Analyze suspicious messages, investigate potentially dangerous links, and explore image authenticity signals with AI-powered cybersecurity assistance.
+                Extract checkable factual assertions from public statements or articles, cross-reference against authoritative web sources, and inspect transparent, cited verdicts.
               </p>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
                 <Link
-                  to="/analyze/message"
+                  to="/"
                   className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg text-sm font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-sky-300 hover:from-cyan-300 hover:to-sky-200 shadow-lg shadow-cyan-500/20 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Start Free Analysis</span>
+                  <span>Check a Claim Now (Public)</span>
                 </Link>
 
                 <Link
-                  to="/academy"
+                  to="/?reportId=fc-demo-supported"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg text-sm font-medium text-slate-200 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-colors whitespace-nowrap"
                 >
-                  <span>Explore Cyber Safety</span>
+                  <span>Explore Demo Benchmarks</span>
                   <ArrowRight className="w-4 h-4 text-cyan-400" />
                 </Link>
               </div>
@@ -186,7 +186,7 @@ export const Home: React.FC = () => {
               <div className="relative rounded-2xl overflow-hidden border border-cyan-500/30 bg-[#0E172B] shadow-2xl shadow-cyan-950/40 group">
                 <img
                   src={ASSETS.hero}
-                  alt="CyberShield AI Digital Shield and Threat Defense Core"
+                  alt="Trust Lens Shield and Evidence Core"
                   className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02]"
                   referrerPolicy="no-referrer"
                 />
@@ -217,222 +217,71 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Login Portal Section (Just after Hero) */}
-      <section id="login-section" className="py-16 bg-[#060B17] border-b border-slate-800/80 relative">
+      {/* Verification Methodology Section */}
+      <section className="py-16 bg-[#060B17] border-b border-slate-800/80 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto bg-[#0E172B] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="grid grid-cols-1 md:grid-cols-12">
-              
-              {/* Left Column: Brand & Security Overview */}
-              <div className="md:col-span-5 p-8 bg-[#090F1E] border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between space-y-6">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-cyan-400">
-                    <Lock className="w-3.5 h-3.5" />
-                    <span>Terminal Authentication</span>
-                  </div>
-                  <h3 className="font-display text-2xl font-bold text-white tracking-tight">
-                    SecOps Access Portal
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Log in to unlock your persistent investigation history, save customized link analyses, and access internal threat metrics.
-                  </p>
-                </div>
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cyan-400">
+              Deterministic Verification Architecture
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              How Our Fact-Checking Engine Works
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Designed for transparency under hackathon evaluation guidelines: LLMs are used strictly as text parsers and comparisons, with all factual determinations grounded in retrieved evidence.
+            </p>
+          </div>
 
-                <div className="space-y-2 text-xs font-mono text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>SSRF Guarded Sandboxing</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Encrypted Session Credentials</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Instant 1-Click SecOps Demo</span>
-                  </div>
-                </div>
-
-                <div className="text-[11px] font-mono text-slate-500">
-                  Authentication Framework · Supabase & JWT
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="p-5 rounded-xl bg-[#0D1527] border border-slate-800 space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
+                01
               </div>
-
-              {/* Right Column: Interactive Login Form or Active Session Badge */}
-              <div className="md:col-span-7 p-8 sm:p-10 flex flex-col justify-center space-y-5">
-                {user ? (
-                  <div className="space-y-4 py-4">
-                    <div className="p-4 rounded-xl bg-[#080D1A] border border-cyan-500/30 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">
-                          Active Terminal Session
-                        </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          {user.role} Active
-                        </span>
-                      </div>
-                      <h4 className="font-display text-base font-bold text-white">
-                        {user.fullName || user.email}
-                      </h4>
-                      <p className="text-xs font-mono text-slate-400 truncate">
-                        ID: {user.id} · Connected to SecOps Hub
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                      <Link
-                        to="/dashboard"
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 transition-colors shadow-sm shadow-cyan-500/20"
-                      >
-                        <User className="w-3.5 h-3.5" />
-                        <span>Launch Security Dashboard</span>
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={logout}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-medium text-slate-300 hover:text-rose-400 bg-slate-900 border border-slate-700 transition-colors"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-1">
-                      <h4 className="font-display text-lg font-bold text-white">
-                        Sign In to Your Workspace
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        Enter your credentials or use the SecOps Admin access below.
-                      </p>
-                    </div>
-
-                    {/* Master Lock & Supabase Storage Info Box */}
-                    <div className="p-3 bg-cyan-950/40 border border-cyan-500/40 rounded-xl space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-mono text-cyan-300 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                          <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                          Platform Gate Locked
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          Supabase Synced (rjoxluyttsynswogqlun)
-                        </span>
-                      </div>
-                      <div className="text-xs font-mono text-slate-300 space-y-1 bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Unlock Password:</span>
-                          <code className="text-emerald-300 font-bold bg-slate-950 px-2 py-0.5 rounded border border-emerald-500/30">hemlo@guys123</code>
-                        </div>
-                        <div className="text-[10px] text-slate-400 pt-0.5">
-                          Anyone can only enter using this password. All logins are stored in your Supabase account.
-                        </div>
-                      </div>
-                    </div>
-
-                    {loginError && (
-                      <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-xs text-rose-300 flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                        <span>{loginError}</span>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleInPageLogin} className="space-y-3.5">
-                      <div className="space-y-1">
-                        <label className="text-xs font-mono font-medium text-slate-300 block">
-                          Email Address or Username
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                            <Mail className="w-3.5 h-3.5" />
-                          </div>
-                          <input
-                            type="text"
-                            value={loginEmail}
-                            onChange={(e) => setLoginEmail(e.target.value)}
-                            placeholder="admin@cybershield.ai or sec ops admin"
-                            className="w-full bg-[#080D1A] border border-slate-700/80 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-mono font-medium text-slate-300">
-                            Password
-                          </label>
-                          <Link
-                            to="/forgot-password"
-                            className="text-[11px] font-mono text-cyan-400 hover:underline"
-                          >
-                            Forgot?
-                          </Link>
-                        </div>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                            <Lock className="w-3.5 h-3.5" />
-                          </div>
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={loginPassword}
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            placeholder="Enter hemlo@guys123"
-                            className="w-full bg-[#080D1A] border border-slate-700/80 rounded-lg pl-9 pr-10 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
-                          >
-                            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={loginLoading}
-                        className="w-full py-2.5 px-4 rounded-lg text-xs font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 transition-all shadow-md shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer mt-1"
-                      >
-                        {loginLoading ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Authenticating...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Sign In</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-
-                    <div className="pt-2 border-t border-slate-800 flex flex-col gap-2 text-center">
-                      <button
-                        type="button"
-                        onClick={handleDemoLogin}
-                        className="w-full py-2 px-3 rounded-lg border border-cyan-500/40 bg-cyan-500/10 text-xs font-mono text-cyan-300 hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Shield className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>1-Click Sign In as SecOps Admin (hemlo@guys123)</span>
-                      </button>
-
-                      <p className="text-xs text-slate-400">
-                        New to Trust Lens?{' '}
-                        <Link to="/register" className="text-cyan-400 hover:underline font-semibold">
-                          Register New Account
-                        </Link>
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-
+              <h3 className="font-semibold text-white text-sm">Claim Extraction</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Extracts 1 to 5 distinct checkable assertions. Preserves numbers, dates, geography, and explicitly flags missing time or jurisdiction context rather than guessing.
+              </p>
             </div>
+
+            <div className="p-5 rounded-xl bg-[#0D1527] border border-slate-800 space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
+                02
+              </div>
+              <h3 className="font-semibold text-white text-sm">Evidence Retrieval</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Executes live web search separately for each assertion. Records exact destination URLs, publication dates, excerpts, and retrieval timestamps.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D1527] border border-slate-800 space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
+                03
+              </div>
+              <h3 className="font-semibold text-white text-sm">Rank & Deduplication</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Prioritizes primary sources (.gov, .edu) and recognized wire services. Identifies syndicated stories so copied articles are never counted as independent corroboration.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#0D1527] border border-slate-800 space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-mono text-xs font-bold">
+                04
+              </div>
+              <h3 className="font-semibold text-white text-sm">Evidence-Grounded Verdicts</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Outputs Supported, Contradicted, Unverified, or Mixed with direct citations. Synthesizes overall findings via discrete claim count rules without arbitrary percentages.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
+            >
+              <Search className="w-4 h-4" />
+              <span>Launch Fact Checker Now</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -565,7 +414,7 @@ export const Home: React.FC = () => {
               Clear Operational Model
             </span>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
-              How CyberShield AI Protects You
+              How Trust Lens Protects You
             </h2>
             <p className="text-sm sm:text-base text-slate-400">
               A structured 4-step framework turning ambiguous threats into informed, defensive action.
@@ -630,7 +479,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* CyberShield Academy Spotlight */}
+      {/* Trust Lens Academy Spotlight */}
       <section className="py-20 bg-[#0B1120] border-b border-slate-800/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -841,7 +690,7 @@ export const Home: React.FC = () => {
                     rows={4}
                     value={fbMessage}
                     onChange={(e) => setFbMessage(e.target.value)}
-                    placeholder="Tell us what worked well, any edge cases you encountered, or ideas to make CyberShield AI even safer..."
+                    placeholder="Tell us what worked well, any edge cases you encountered, or ideas to make Trust Lens even better..."
                     className="w-full bg-[#080D1A] border border-slate-700/80 rounded-lg p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 leading-relaxed resize-y"
                     disabled={fbLoading}
                   />

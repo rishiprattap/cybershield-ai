@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
                 <Shield className="w-4 h-4" />
               </div>
               <span className="font-display text-base font-bold text-white tracking-tight">
-                CyberShield<span className="text-cyan-400">.AI</span>
+                Trust<span className="text-cyan-400"> Lens</span>
               </span>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
@@ -123,11 +123,11 @@ export const Footer: React.FC = () => {
         {/* Legal & Responsible AI Disclaimer */}
         <div className="pt-8 border-t border-slate-800/80 text-xs text-slate-400 space-y-3">
           <p className="leading-relaxed">
-            <strong className="text-slate-300">Responsible AI & Security Disclosure:</strong> CyberShield AI employs machine learning models and structural heuristics to evaluate potential digital threats. Threat classifications, risk indices, and synthetic likelihood estimates are advisory guidance tools designed to enhance user vigilance and cannot replace professional incident response, certified digital forensics, or organizational compliance audit procedures.
+            <strong className="text-slate-300">Responsible AI & Verification Disclosure:</strong> Trust Lens employs language models grounded strictly in live web search evidence to evaluate factual claims. Verdicts and source citations provide evidence-backed transparency to aid critical thinking.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 font-mono text-[11px] text-slate-400">
             <div>
-              © 2026 CyberShield AI Platform. Think Before You Click.
+              © 2026 Trust Lens Platform. Verify Before You Share.
             </div>
             <div className="flex items-center gap-4">
               <span className="hover:text-slate-300 cursor-pointer">Privacy Framework</span>

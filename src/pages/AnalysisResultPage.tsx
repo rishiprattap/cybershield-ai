@@ -104,7 +104,7 @@ export const AnalysisResultPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cybershield_dossier_${result.id}.json`;
+    a.download = `trustlens_dossier_${result.id}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

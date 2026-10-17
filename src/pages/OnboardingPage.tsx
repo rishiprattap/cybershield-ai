@@ -55,7 +55,7 @@ export const OnboardingPage: React.FC = () => {
       image: ASSETS.hero,
       icon: Shield,
       content:
-        'CyberShield AI assigns clear labels: High Risk, Suspicious, Lower Observed Risk, or Inconclusive. We provide the specific indicators observed and transparently explain what cannot be determined without deep server logs, rather than inventing false certainty.',
+        'Trust Lens assigns clear labels: Supported, Contradicted, Mixed, or Unverified. We provide the specific indicators observed and transparently explain what cannot be determined without deeper evidence, rather than inventing false certainty.',
       tips: [
         'A "Lower Observed Risk" label is not a guarantee that a novel zero-day is absent.',
         '"Inconclusive" results suggest seeking independent confirmation.',
@@ -106,7 +106,7 @@ export const OnboardingPage: React.FC = () => {
             </div>
             <div>
               <span className="font-display text-sm font-bold text-white block">
-                Welcome to CyberShield AI
+                Welcome to Trust Lens
               </span>
               <span className="text-[11px] font-mono text-cyan-400">
                 Step {currentStep + 1} of {steps.length} · Interactive Onboarding

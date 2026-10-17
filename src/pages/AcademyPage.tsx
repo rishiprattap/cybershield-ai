@@ -175,7 +175,7 @@ export const AcademyPage: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-cyan-400">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>CyberShield Academy & Defense Center</span>
+            <span>Trust Lens Academy & Defense Center</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
             Learn to Spot Deception with Real-World Cyber Knowledge

@@ -4,16 +4,20 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
-
-dotenv.config();
+import { runFactCheckPipeline, verifyGeminiModelConnection } from './factCheckEngine.js';
+import { FactCheckReport } from './src/types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const rootEnvPath = path.resolve(__dirname, '.env');
+dotenv.config({ path: rootEnvPath });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '25mb' }));
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 // Supabase Database Connection for persistent user login data storage
 const SUPABASE_PROJECT_ID = 'rjoxluyttsynswogqlun';
@@ -45,12 +49,12 @@ export interface SupabaseLoginRecord {
 const supabaseLoginLogs: SupabaseLoginRecord[] = [
   {
     id: 'log-seed-1',
-    email: 'admin@cybershield.ai',
+    email: 'admin@trustlens.ai',
     role: 'admin',
     status: 'AUTHORIZED',
     passwordMatched: true,
     ip: '127.0.0.1',
-    userAgent: 'SecOps Workstation / Edge',
+    userAgent: 'Trust Lens SecOps / Edge',
     timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
     supabaseSynced: true,
     supabaseMessage: 'Saved to Supabase Project rjoxluyttsynswogqlun',
@@ -142,11 +146,11 @@ async function saveLoginDetailToSupabase(record: {
   return logEntry;
 }
 
-// Initialized Gemini AI client
-const geminiApiKey = process.env.GEMINI_API_KEY;
-let ai: GoogleGenAI | null = null;
-if (geminiApiKey) {
-  ai = new GoogleGenAI({
+// Dynamic Gemini AI client getter
+export function getGeminiClient(): GoogleGenAI | null {
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) return null;
+  return new GoogleGenAI({
     apiKey: geminiApiKey,
     httpOptions: {
       headers: {
@@ -155,6 +159,9 @@ if (geminiApiKey) {
     },
   });
 }
+
+const geminiApiKey = process.env.GEMINI_API_KEY;
+let ai: GoogleGenAI | null = getGeminiClient();
 
 // In-Memory Database for state persistence & demonstrations
 interface DbAnalysis {
@@ -206,9 +213,18 @@ const users: DbUser[] = [
   },
   {
     id: 'user-secops-admin',
+    email: 'admin@trustlens.ai',
+    passwordHash: 'hemlo@guys123',
+    fullName: 'Trust Lens Administrator',
+    onboardingCompleted: true,
+    role: 'admin',
+    createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
+  },
+  {
+    id: 'user-secops-legacy',
     email: 'admin@cybershield.ai',
     passwordHash: 'hemlo@guys123',
-    fullName: 'SecOps Administrator',
+    fullName: 'Legacy SecOps Administrator',
     onboardingCompleted: true,
     role: 'admin',
     createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
@@ -231,6 +247,227 @@ const users: DbUser[] = [
     role: 'user',
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
   }
+];
+
+// Fact-Checking In-Memory Database with Clearly Labeled Demo Examples
+const factCheckReports: FactCheckReport[] = [
+  {
+    id: 'fc-demo-supported',
+    inputType: 'text',
+    rawInput: 'NASA landed the Perseverance rover on Mars in February 2021.',
+    claims: [
+      {
+        id: 'claim-1',
+        claimText: 'NASA landed the Perseverance rover on Mars in February 2021.',
+        verdict: 'SUPPORTED',
+        explanation: 'Official NASA mission records and global scientific reporting document that the Mars 2020 Perseverance rover successfully touched down in Jezero Crater on February 18, 2021.',
+        missingContext: null,
+        citations: [
+          {
+            sourceId: 'src-nasa-perseverance',
+            url: 'https://science.nasa.gov/mission/mars-2020-perseverance/',
+            title: 'Mars 2020: Perseverance Rover - NASA Science',
+            quoteOrEvidence: 'NASA\'s Mars 2020 Perseverance rover successfully landed in Jezero Crater on Feb. 18, 2021.',
+          },
+          {
+            sourceId: 'src-reuters-perseverance',
+            url: 'https://www.reuters.com/lifestyle/science/nasas-perseverance-rover-touches-down-safely-mars-2021-02-18/',
+            title: 'NASA rover Perseverance touches down safely on Mars - Reuters',
+            quoteOrEvidence: 'NASA\'s robotic rover Perseverance touched down on the surface of Mars on Thursday after a 293-million-mile journey.',
+          },
+        ],
+        sourcesSearched: [
+          {
+            id: 'src-nasa-perseverance',
+            url: 'https://science.nasa.gov/mission/mars-2020-perseverance/',
+            title: 'Mars 2020: Perseverance Rover - NASA Science',
+            snippet: 'NASA\'s Mars 2020 Perseverance rover landed on Mars on Feb. 18, 2021 to search for signs of ancient microbial life.',
+            sourceType: 'search_snippet',
+            domain: 'science.nasa.gov',
+            publicationDate: '2021-02-18',
+            retrievedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+            rankScore: 95,
+            rankReasons: ['Official government/space agency primary domain (+30)', 'Contains 5 claim keywords (+30)'],
+            isPrimarySource: true,
+            reputationTier: 'institutional_academic',
+          },
+          {
+            id: 'src-reuters-perseverance',
+            url: 'https://www.reuters.com/lifestyle/science/nasas-perseverance-rover-touches-down-safely-mars-2021-02-18/',
+            title: 'NASA rover Perseverance touches down safely on Mars - Reuters',
+            snippet: 'Reuters wire coverage of the Mars 2020 landing event in Jezero Crater on February 18, 2021.',
+            sourceType: 'search_snippet',
+            domain: 'reuters.com',
+            publicationDate: '2021-02-18',
+            retrievedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+            rankScore: 88,
+            rankReasons: ['International news wire service (+25)', 'Directly corroborates date and entity (+24)'],
+            isPrimarySource: false,
+            reputationTier: 'wire_or_factchecker',
+          },
+        ],
+        searchStatus: 'SUCCESS',
+      },
+    ],
+    overall: {
+      status: 'SUPPORTED',
+      summary: 'All 1 extracted claim is corroborated by authoritative NASA and news wire documentation.',
+      totalClaims: 1,
+      supportedCount: 1,
+      contradictedCount: 0,
+      unverifiedCount: 0,
+      mixedCount: 0,
+      ruleApplied: '100% corroborated claims rule',
+    },
+    modelUsed: 'gemini-2.5-flash',
+    aiStatus: 'ACTIVE',
+    aiStatusMessage: 'Corroborated against NASA archives and wire reporting.',
+    checkedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+    isDemoExample: true,
+    processingTimeMs: 1420,
+  },
+  {
+    id: 'fc-demo-contradicted',
+    inputType: 'text',
+    rawInput: 'The Eiffel Tower was permanently relocated from Paris to Lyon during the 1998 World Cup.',
+    claims: [
+      {
+        id: 'claim-1',
+        claimText: 'The Eiffel Tower was permanently relocated from Paris to Lyon during the 1998 World Cup.',
+        verdict: 'CONTRADICTED',
+        explanation: 'Historical archives and architectural records confirm the Eiffel Tower has remained permanently on the Champ de Mars in Paris since its completion for the 1889 Exposition Universelle.',
+        missingContext: null,
+        citations: [
+          {
+            sourceId: 'src-paris-toureiffel',
+            url: 'https://www.toureiffel.paris/en/the-monument/history',
+            title: 'History of the Eiffel Tower - Official Website',
+            quoteOrEvidence: 'Constructed on the Champ de Mars in Paris for the 1889 World\'s Fair, where it has continuously stood.',
+          },
+        ],
+        sourcesSearched: [
+          {
+            id: 'src-paris-toureiffel',
+            url: 'https://www.toureiffel.paris/en/the-monument/history',
+            title: 'History of the Eiffel Tower - Official Website',
+            snippet: 'The Eiffel Tower has stood on the Champ de Mars in the 7th arrondissement of Paris since 1889.',
+            sourceType: 'search_snippet',
+            domain: 'toureiffel.paris',
+            publicationDate: null,
+            retrievedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+            rankScore: 92,
+            rankReasons: ['Official monument authority domain (+30)', 'Contains primary location records (+25)'],
+            isPrimarySource: true,
+            reputationTier: 'institutional_academic',
+          },
+        ],
+        searchStatus: 'SUCCESS',
+      },
+    ],
+    overall: {
+      status: 'CONTRADICTED',
+      summary: 'All 1 extracted claim is contradicted by authoritative historical and location records.',
+      totalClaims: 1,
+      supportedCount: 0,
+      contradictedCount: 1,
+      unverifiedCount: 0,
+      mixedCount: 0,
+      ruleApplied: '100% contradicted claims rule',
+    },
+    modelUsed: 'gemini-2.5-flash',
+    aiStatus: 'ACTIVE',
+    aiStatusMessage: 'Corroborated against official Paris monument registries.',
+    checkedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    isDemoExample: true,
+    processingTimeMs: 1250,
+  },
+  {
+    id: 'fc-demo-mixed',
+    inputType: 'text',
+    rawInput: 'Electric vehicles produce zero lifetime emissions and have no environmental impact.',
+    claims: [
+      {
+        id: 'claim-1',
+        claimText: 'Electric vehicles produce zero tailpipe emissions during driving operation.',
+        verdict: 'SUPPORTED',
+        explanation: 'Battery electric vehicles produce zero direct exhaust/tailpipe emissions while operating on roadways.',
+        missingContext: 'Operation phase only',
+        citations: [
+          {
+            sourceId: 'src-epa-ev',
+            url: 'https://www.epa.gov/greenvehicles/electric-vehicle-myths',
+            title: 'Electric Vehicle Myths - US Environmental Protection Agency',
+            quoteOrEvidence: 'Electric vehicles have no tailpipe emissions when driving, though upstream power generation and manufacturing do generate emissions.',
+          },
+        ],
+        sourcesSearched: [
+          {
+            id: 'src-epa-ev',
+            url: 'https://www.epa.gov/greenvehicles/electric-vehicle-myths',
+            title: 'Electric Vehicle Myths - US Environmental Protection Agency',
+            snippet: 'Electric vehicles produce zero tailpipe emissions while driving; total lifecycle footprint depends on battery manufacturing and grid electricity generation.',
+            sourceType: 'search_snippet',
+            domain: 'epa.gov',
+            publicationDate: '2023-08-15',
+            retrievedAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+            rankScore: 94,
+            rankReasons: ['Federal regulatory environmental authority (.gov) (+30)', 'High keyword overlap (+28)'],
+            isPrimarySource: true,
+            reputationTier: 'institutional_academic',
+          },
+        ],
+        searchStatus: 'SUCCESS',
+      },
+      {
+        id: 'claim-2',
+        claimText: 'Electric vehicles have no environmental impact and zero lifetime emissions.',
+        verdict: 'CONTRADICTED',
+        explanation: 'Peer-reviewed lifecycle analyses by environmental agencies show electric vehicles generate lifecycle emissions during battery manufacturing, raw material mining, and electricity generation.',
+        missingContext: 'Lifecycle boundary conditions omitted',
+        citations: [
+          {
+            sourceId: 'src-epa-ev',
+            url: 'https://www.epa.gov/greenvehicles/electric-vehicle-myths',
+            title: 'Electric Vehicle Myths - US Environmental Protection Agency',
+            quoteOrEvidence: 'EV manufacturing produces emissions from raw material extraction and battery production, though lower than gasoline cars over their complete lifecycle.',
+          },
+        ],
+        sourcesSearched: [
+          {
+            id: 'src-epa-ev',
+            url: 'https://www.epa.gov/greenvehicles/electric-vehicle-myths',
+            title: 'Electric Vehicle Myths - US Environmental Protection Agency',
+            snippet: 'EV manufacturing produces emissions from raw material extraction and battery production, though lower than gasoline cars over their complete lifecycle.',
+            sourceType: 'search_snippet',
+            domain: 'epa.gov',
+            publicationDate: '2023-08-15',
+            retrievedAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+            rankScore: 94,
+            rankReasons: ['Federal regulatory environmental authority (.gov) (+30)'],
+            isPrimarySource: true,
+            reputationTier: 'institutional_academic',
+          },
+        ],
+        searchStatus: 'SUCCESS',
+      },
+    ],
+    overall: {
+      status: 'MIXED',
+      summary: 'The input contains mixed findings: 1 supported claim (zero tailpipe operational emissions) and 1 contradicted claim (claim of zero lifetime environmental impact).',
+      totalClaims: 2,
+      supportedCount: 1,
+      contradictedCount: 1,
+      unverifiedCount: 0,
+      mixedCount: 0,
+      ruleApplied: 'Split corroboration rule',
+    },
+    modelUsed: 'gemini-2.5-flash',
+    aiStatus: 'ACTIVE',
+    aiStatusMessage: 'Corroborated against EPA and peer-reviewed lifecycle analyses.',
+    checkedAt: new Date(Date.now() - 3600000 * 20).toISOString(),
+    isDemoExample: true,
+    processingTimeMs: 1680,
+  },
 ];
 
 const analyses: DbAnalysis[] = [
@@ -256,7 +493,7 @@ const analyses: DbAnalysis[] = [
       'Forward the message to 7726 (SPAM) and report to Chase fraud department.'
     ],
     technicalDetails: {
-      model: 'gemini-3.8-flash',
+      model: GEMINI_MODEL,
       timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
       checksPerformed: ['Linguistic Urgency Analysis', 'Domain Reputation Correlation', 'Social Engineering Heuristics'],
     },
@@ -267,7 +504,7 @@ const analyses: DbAnalysis[] = [
     userId: 'user-demo-1',
     type: 'url',
     target: 'http://secure-paypal-verify.com.auth-update.ru/login?token=928a',
-    title: 'PayPal Subdomain Spoofing Gateway',
+    title: '[Demo Example] PayPal Subdomain Spoofing Gateway',
     riskLevel: 'HIGH',
     score: 91,
     verdict: 'Malicious lookalike domain attempting credential spoofing',
@@ -284,7 +521,7 @@ const analyses: DbAnalysis[] = [
       'Submit the URL to Google Safe Browsing and Netcraft for takedown.'
     ],
     technicalDetails: {
-      model: 'gemini-3.8-flash',
+      model: GEMINI_MODEL,
       timestamp: new Date(Date.now() - 3600000 * 20).toISOString(),
       checksPerformed: ['Apex Domain Parser', 'Punycode/IDN Spoof Check', 'SSRF Guard', 'SSL Protocol Inspection'],
       redirectHops: 2,
@@ -298,7 +535,7 @@ const analyses: DbAnalysis[] = [
     userId: 'user-demo-1',
     type: 'image',
     target: 'sample_id_badge_tampering.png',
-    title: 'Corporate Security Badge Image Verification',
+    title: '[Demo Example] Corporate Security Badge Image Verification',
     riskLevel: 'SUSPICIOUS',
     score: 68,
     verdict: 'Evidence of localized digital manipulation detected',
@@ -315,7 +552,7 @@ const analyses: DbAnalysis[] = [
       'Do not grant elevated facility access based solely on this image.'
     ],
     technicalDetails: {
-      model: 'gemini-3.8-flash',
+      model: GEMINI_MODEL,
       timestamp: new Date(Date.now() - 86400000).toISOString(),
       checksPerformed: ['Forensic Pixel Density Analysis', 'JPEG Ghost Artifact Scan', 'Generative Diffusion Likelihood Matrix'],
       aiGenerationLikelihood: 18,
@@ -369,6 +606,139 @@ function validateUrlSafety(inputUrl: string): { safe: boolean; error?: string; p
 // API ROUTES
 // ==========================================
 
+// 0. Primary Public Fact-Checking Pipeline
+app.post('/api/fact-check', async (req, res) => {
+  try {
+    const { type, content } = req.body;
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({
+        error: 'Please provide factual text or a valid article URL to check.',
+      });
+    }
+
+    const inputType = type === 'url' ? 'url' : 'text';
+
+    if (inputType === 'url') {
+      const trimmed = content.trim();
+      if (!/^https?:\/\//i.test(trimmed)) {
+        return res.status(400).json({
+          error: 'Article URL must begin with http:// or https://',
+        });
+      }
+    } else {
+      if (content.trim().length < 5) {
+        return res.status(400).json({
+          error: 'Please enter a longer factual statement or article excerpt (at least 5 characters).',
+        });
+      }
+    }
+
+    const activeAi = getGeminiClient();
+    const report = await runFactCheckPipeline(
+      {
+        type: inputType,
+        content: content.trim(),
+      },
+      activeAi
+    );
+
+    factCheckReports.unshift(report);
+    if (factCheckReports.length > 50) factCheckReports.pop();
+
+    return res.json(report);
+  } catch (err: any) {
+    console.error('Error in /api/fact-check:', err);
+    return res.status(400).json({
+      error:
+        err?.message ||
+        'Failed to complete fact check. If checking a URL, try copying and pasting the article text directly.',
+    });
+  }
+});
+
+app.get('/api/fact-check', (req, res) => {
+  return res.json(factCheckReports);
+});
+
+app.get('/api/fact-check/:id', (req, res) => {
+  const found = factCheckReports.find((r) => r.id === req.params.id);
+  if (!found) {
+    return res.status(404).json({ error: 'Fact check report not found.' });
+  }
+  return res.json(found);
+});
+
+interface CachedModelHealth {
+  configuredModel: string;
+  hasKey: boolean;
+  aiAvailable: boolean;
+  liveTestSuccess: boolean;
+  message: string;
+  latencyMs?: number;
+  lastChecked: number;
+}
+
+let cachedModelHealth: CachedModelHealth | null = null;
+const MODEL_STATUS_TTL_MS = 60_000; // 60-second cache to prevent burning quota
+
+// Diagnostic & Verification Endpoint: Verify configured Gemini model with cached health and rate-limited live probes
+app.get('/api/model-status', async (req, res) => {
+  const configuredModel = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+  const hasKey = Boolean(process.env.GEMINI_API_KEY);
+  const forceProbe = req.query.probe === 'true';
+  const now = Date.now();
+
+  // Return cached result if valid and not expired
+  if (
+    !forceProbe &&
+    cachedModelHealth &&
+    cachedModelHealth.configuredModel === configuredModel &&
+    cachedModelHealth.hasKey === hasKey &&
+    now - cachedModelHealth.lastChecked < MODEL_STATUS_TTL_MS
+  ) {
+    return res.json({
+      ...cachedModelHealth,
+      cached: true,
+      cacheAgeSec: Math.round((now - cachedModelHealth.lastChecked) / 1000),
+    });
+  }
+
+  if (!hasKey) {
+    cachedModelHealth = {
+      configuredModel,
+      hasKey: false,
+      aiAvailable: false,
+      liveTestSuccess: false,
+      message: 'GEMINI_API_KEY is not configured on the server. AI analysis is unavailable.',
+      lastChecked: now,
+    };
+    return res.json(cachedModelHealth);
+  }
+
+  // Rate-limit live probes to at most once per 15 seconds to preserve API quota
+  if (cachedModelHealth && now - cachedModelHealth.lastChecked < 15_000 && !forceProbe) {
+    return res.json({
+      ...cachedModelHealth,
+      cached: true,
+      cacheAgeSec: Math.round((now - cachedModelHealth.lastChecked) / 1000),
+    });
+  }
+
+  const testResult = await verifyGeminiModelConnection(process.env.GEMINI_API_KEY, configuredModel);
+  cachedModelHealth = {
+    configuredModel,
+    hasKey: true,
+    aiAvailable: testResult.success,
+    liveTestSuccess: testResult.success,
+    message: testResult.message,
+    latencyMs: testResult.latencyMs,
+    lastChecked: Date.now(),
+  };
+
+  return res.json(cachedModelHealth);
+});
+
 // 1. Message Analysis
 app.post('/api/analyze/message', async (req, res) => {
   try {
@@ -383,7 +753,7 @@ app.post('/api/analyze/message', async (req, res) => {
 
     if (ai) {
       try {
-        const prompt = `You are CyberShield AI's senior digital threat detection engine. Analyze the following suspicious message or email for cybersecurity risks:
+        const prompt = `You are Trust Lens's senior digital threat detection engine. Analyze the following suspicious message or email for cybersecurity risks:
 """
 ${cleanText}
 """
@@ -418,7 +788,7 @@ Return a STRICT JSON object conforming to this schema (no extra text, no markdow
 }`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: GEMINI_MODEL,
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
@@ -498,7 +868,7 @@ Return a STRICT JSON object conforming to this schema (no extra text, no markdow
       uncertaintyExplanation: resultData.uncertaintyExplanation || 'External context and full server headers were not supplied.',
       recommendations: resultData.recommendations || ['Exercise caution before interacting with this content.'],
       technicalDetails: {
-        model: ai ? 'gemini-3.8-flash' : 'cyber-heuristic-engine-v2',
+        model: ai ? GEMINI_MODEL : 'cyber-heuristic-engine-v2',
         timestamp: new Date().toISOString(),
         checksPerformed: ['Linguistic Urgency Analysis', 'Credential Harvesting Scrutiny', 'Social Engineering Detection', 'Sender Pattern Correlation']
       },
@@ -543,7 +913,7 @@ app.post('/api/analyze/url', async (req, res) => {
 
     if (ai) {
       try {
-        const prompt = `You are CyberShield AI's URL and Link Reputation Intelligence analyst.
+        const prompt = `You are Trust Lens's URL and Link Reputation Intelligence analyst.
 Investigate this URL: "${normalizedUrl}"
 Parsed Hostname: "${hostname}"
 Protocol: "${parsed.protocol}"
@@ -578,7 +948,7 @@ Return a STRICT JSON object (no markdown backticks, no other text):
 }`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: GEMINI_MODEL,
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
@@ -654,7 +1024,7 @@ Return a STRICT JSON object (no markdown backticks, no other text):
       uncertaintyExplanation: resultData.uncertaintyExplanation || 'Live content rendering was not performed to prevent malware exposure.',
       recommendations: resultData.recommendations || ['Avoid entering sensitive data on unverified websites.'],
       technicalDetails: {
-        model: ai ? 'gemini-3.8-flash' : 'url-structural-analyzer-v1',
+        model: ai ? GEMINI_MODEL : 'url-structural-analyzer-v1',
         timestamp: new Date().toISOString(),
         checksPerformed: ['Apex Hostname Parsing', 'SSRF Guard Verification', 'Brand Typosquatting Matcher', 'Protocol Security Check'],
         domainTrustScore: Math.max(0, 100 - (resultData.score || 50)),
@@ -695,7 +1065,7 @@ app.post('/api/analyze/image', async (req, res) => {
           },
         };
 
-        const promptText = `You are CyberShield AI's specialized image authenticity & digital forensics system.
+        const promptText = `You are Trust Lens's specialized image authenticity & digital forensics system.
 Carefully examine this image for:
 1. Synthetic AI Generation Signals (e.g. skin over-smoothing, unnatural pupil geometry, asymmetrical accessories, impossible background textures, blending artifacts).
 2. Digital Manipulation / Photo Tampering Signals (e.g. clone stamping, localized JPEG compression ghosting, inconsistent lighting vectors, blurred splice boundaries).
@@ -732,7 +1102,7 @@ Return a STRICT JSON object (no markdown backticks, no other text):
 }`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: GEMINI_MODEL,
           contents: {
             parts: [imagePart, { text: promptText }],
           },
@@ -787,7 +1157,7 @@ Return a STRICT JSON object (no markdown backticks, no other text):
       uncertaintyExplanation: resultData.uncertaintyExplanation || 'Probabilistic visual model without cryptographic provenance verification.',
       recommendations: resultData.recommendations || ['Verify provenance through independent corroboration.'],
       technicalDetails: {
-        model: ai ? 'gemini-3.8-flash' : 'pixel-frequency-scanner-v1',
+        model: ai ? GEMINI_MODEL : 'pixel-frequency-scanner-v1',
         timestamp: new Date().toISOString(),
         checksPerformed: ['Generative Diffusion Artifact Inspection', 'JPEG Splicing & Ghost Detection', 'Anatomical Coherence Check', 'Lighting Vector Uniformity'],
         aiGenerationLikelihood: resultData.aiGenerationLikelihood ?? 35,
@@ -815,11 +1185,11 @@ app.post('/api/assistant/chat', async (req, res) => {
 
     if (ai) {
       try {
-        const systemInstruction = `You are CyberShield AI, an expert, trustworthy, and helpful cybersecurity awareness and digital safety assistant.
+        const systemInstruction = `You are Trust Lens Assistant, an expert, trustworthy, and helpful cybersecurity awareness, fact-checking, and digital safety assistant.
 Your mission:
-- Answer cybersecurity awareness questions clearly and accessibly for both beginners and technical users.
+- Answer cybersecurity awareness and factual verification questions clearly and accessibly for both beginners and technical users.
 - Explain phishing, smishing, spear phishing, credential stuffing, online fraud, social engineering, and safe browsing.
-- Help users interpret CyberShield analysis results and risk classifications (High Risk, Suspicious, Lower Observed Risk, Inconclusive).
+- Help users interpret Trust Lens analysis results and risk classifications (High Risk, Suspicious, Lower Observed Risk, Inconclusive).
 - Provide practical, defensive digital security advice (MFA, password managers, safe link verification).
 - Emphasize the limitations of automated detection: no automated tool is 100% infallible; explain when human caution or independent verification is crucial.
 - NEVER instruct users to click suspicious links or download questionable payloads.
@@ -838,7 +1208,7 @@ Your mission:
         chatContents.push({ role: 'user', parts: [{ text: message }] });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.8-flash',
+          model: GEMINI_MODEL,
           contents: chatContents,
           config: {
             systemInstruction,
@@ -855,7 +1225,7 @@ Your mission:
 
     // High quality offline fallback responses
     const lower = message.toLowerCase();
-    let reply = "CyberShield AI is here to help you navigate digital risks safely. Always verify unrequested messages through an official, independent channel before taking action.";
+    let reply = "Trust Lens is here to help you navigate digital risks and factual claims safely. Always verify unrequested messages through an official, independent channel before taking action.";
 
     if (lower.includes('phish') || lower.includes('email') || lower.includes('sms')) {
       reply = "To identify a phishing attempt, look for three key warning signs:\n1. Artificial Urgency: Demands for immediate action within minutes or threats of account cancellation.\n2. Mismatched Links: The sender name may say 'Chase' or 'PayPal', but hovering over the link reveals a different, unofficial domain.\n3. Credential or Payment Requests: Legitimate providers rarely ask for passwords, full credit card numbers, or one-time passcodes via SMS or email.";
@@ -918,137 +1288,25 @@ app.delete('/api/analyses', (req, res) => {
   return res.json({ success: true, message: 'All analysis history cleared.' });
 });
 
-// 6. User Auth & Profiles
-app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email/username and password are required.' });
-  }
-
-  const query = email.trim().toLowerCase();
-  const normalizedQuery = query.replace(/\s+/g, ' ');
-  const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
-  const userAgent = req.headers['user-agent'] || 'Browser Client';
-
-  // 1. MASTER GATE LOCK ENFORCEMENT
-  // "lock this page for users with a password that is hemlo@guys123 and anyone could only enter it using this password only"
-  if (password !== 'hemlo@guys123') {
-    const logRecord = await saveLoginDetailToSupabase({
-      email: normalizedQuery,
-      role: 'unauthorized',
-      status: 'REJECTED',
-      passwordMatched: false,
-      ip: clientIp,
-      userAgent,
-    });
-
-    return res.status(401).json({
-      error: 'Access Locked: Anyone can only enter this platform using password "hemlo@guys123".',
-      supabaseLogged: true,
-      logId: logRecord.id,
-    });
-  }
-
-  // 2. Identify user identity or dynamically admit authorized user with hemlo@guys123
-  const isSecOpsAdmin =
-    normalizedQuery === 'sec ops admin' ||
-    normalizedQuery === 'secops admin' ||
-    normalizedQuery === 'secops' ||
-    normalizedQuery === 'admin' ||
-    normalizedQuery === 'admin@cybershield.ai' ||
-    normalizedQuery === 'secops@trustlens.ai';
-
-  let user = users.find(u => {
-    const userEmail = u.email.toLowerCase();
-    return userEmail === normalizedQuery || u.id.toLowerCase() === normalizedQuery;
-  });
-
-  if (isSecOpsAdmin) {
-    user = users.find(u => u.role === 'admin') || {
-      id: 'user-secops-admin',
-      email: 'admin@cybershield.ai',
-      passwordHash: 'hemlo@guys123',
-      fullName: 'SecOps Administrator',
-      onboardingCompleted: true,
-      role: 'admin',
-      createdAt: new Date().toISOString(),
-    };
-  } else if (!user) {
-    // Dynamically provision and grant access to authorized user entering hemlo@guys123
-    user = {
-      id: `user-${Date.now()}`,
-      email: email.trim(),
-      passwordHash: 'hemlo@guys123',
-      fullName: email.includes('@') ? email.split('@')[0] : email.trim(),
-      onboardingCompleted: true,
-      role: 'analyst',
-      createdAt: new Date().toISOString(),
-    };
-    users.push(user);
-  }
-
-  // 3. PERSIST LOGIN DETAILS TO SUPABASE ACCOUNT (Project rjoxluyttsynswogqlun)
-  const logRecord = await saveLoginDetailToSupabase({
-    email: user.email,
-    role: user.role,
-    status: 'AUTHORIZED',
-    passwordMatched: true,
-    ip: clientIp,
-    userAgent,
-  });
-
-  return res.json({
-    token: `token-${user.id}-${Date.now()}`,
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      onboardingCompleted: user.onboardingCompleted,
-      role: user.role,
-      createdAt: user.createdAt,
-    },
-    supabaseSync: {
-      saved: true,
-      projectId: SUPABASE_PROJECT_ID,
-      logId: logRecord.id,
-      message: logRecord.supabaseMessage || `Saved to Supabase Account (${SUPABASE_PROJECT_ID})`,
-    },
+// 6. User Auth & Profiles (Disabled for Public Hackathon Demo)
+app.post('/api/auth/login', (req, res) => {
+  return res.status(403).json({
+    error:
+      'Shared-password authentication has been disabled for this public demo. The Fact Checker is fully public and accessible without logging in.',
+    publicAccess: true,
   });
 });
 
-// Supabase Status & Saved Logins APIs
-app.get('/api/supabase/status', async (req, res) => {
-  try {
-    const resPing = await fetch(`${SUPABASE_URL}/auth/v1/health`, {
-      headers: { apikey: SUPABASE_ANON_KEY },
-    });
-    const healthData: any = await resPing.json().catch(() => ({}));
-    return res.json({
-      connected: resPing.ok,
-      projectId: SUPABASE_PROJECT_ID,
-      url: SUPABASE_URL,
-      status: resPing.ok ? 'ACTIVE' : 'DEGRADED',
-      authService: healthData?.name || 'GoTrue Auth',
-      version: healthData?.version || 'v2.197.0',
-      totalSavedLogins: supabaseLoginLogs.length,
-      lastEvent: supabaseLoginLogs[0] || null,
-    });
-  } catch (err: any) {
-    return res.json({
-      connected: false,
-      projectId: SUPABASE_PROJECT_ID,
-      url: SUPABASE_URL,
-      error: err?.message,
-      totalSavedLogins: supabaseLoginLogs.length,
-    });
-  }
+// Sensitive Supabase Status & Saved Logins APIs (Blocked on Server for Demo Security)
+app.get('/api/supabase/status', (req, res) => {
+  return res.status(403).json({
+    error: 'Supabase telemetry and administrative status endpoints are disabled for public demo security.',
+  });
 });
 
 app.get('/api/supabase/logins', (req, res) => {
-  return res.json({
-    projectId: SUPABASE_PROJECT_ID,
-    total: supabaseLoginLogs.length,
-    logs: supabaseLoginLogs,
+  return res.status(403).json({
+    error: 'Access to credential logs is restricted and blocked on this public demo server.',
   });
 });
 
@@ -1131,40 +1389,10 @@ app.get('/api/feedback', (req, res) => {
   return res.json(feedbacks);
 });
 
-// 8. Admin Analytics & Telemetry
+// 8. Admin Analytics & Telemetry (Blocked for Public Demo Security)
 app.get('/api/admin/stats', (req, res) => {
-  const totalAnalyses = analyses.length;
-  const totalUsers = users.length;
-  const totalFeedback = feedbacks.length;
-
-  const typeCounts = {
-    message: analyses.filter(a => a.type === 'message').length,
-    url: analyses.filter(a => a.type === 'url').length,
-    image: analyses.filter(a => a.type === 'image').length
-  };
-
-  const riskCounts = {
-    HIGH: analyses.filter(a => a.riskLevel === 'HIGH').length,
-    SUSPICIOUS: analyses.filter(a => a.riskLevel === 'SUSPICIOUS').length,
-    LOW: analyses.filter(a => a.riskLevel === 'LOW').length,
-    INCONCLUSIVE: analyses.filter(a => a.riskLevel === 'INCONCLUSIVE').length
-  };
-
-  return res.json({
-    totalUsers,
-    totalAnalyses,
-    totalFeedback,
-    typeCounts,
-    riskCounts,
-    recentAnalyses: analyses.slice(0, 10),
-    recentFeedback: feedbacks.slice(0, 10),
-    systemStatus: {
-      geminiApiConnected: Boolean(ai),
-      activeModel: 'gemini-3.8-flash',
-      uptimeHours: 48.5,
-      threatFeedsActive: true,
-      sandboxAvailable: true
-    }
+  return res.status(403).json({
+    error: 'Internal SecOps metrics and telemetry endpoints are disabled for public demo access.',
   });
 });
 
@@ -1185,7 +1413,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🛡️ CyberShield AI server running at http://0.0.0.0:${PORT}`);
+    console.log(`🛡️ Trust Lens server running at http://0.0.0.0:${PORT}`);
   });
 }
 

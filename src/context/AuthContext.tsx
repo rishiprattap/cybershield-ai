@@ -63,26 +63,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, pass: string) => {
     setIsLoading(true);
 
-    // Master Gate Lock Enforcement:
-    // Anyone can only enter using password hemlo@guys123
-    if (pass !== 'hemlo@guys123') {
-      setIsLoading(false);
-      // Attempt to ping server so failed attempt is logged to Supabase
-      try {
-        await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pass }),
-        });
-      } catch {
-        // ignore
-      }
-      return {
-        success: false,
-        error: 'Access Locked: This platform is locked. Anyone can only enter using the authorized password: hemlo@guys123',
-      };
-    }
-
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -91,29 +71,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const data = await res.json();
       if (!res.ok) {
-        return { success: false, error: data.error || 'Authentication failed' };
+        return { success: false, error: data.error || 'Authentication unavailable in demo mode' };
       }
       setUser(data.user);
       setToken(data.token);
       return { success: true };
     } catch (err: any) {
-      // Offline fallback handling (strictly password-locked)
-      const cleanEmail = email.trim().toLowerCase().replace(/\s+/g, ' ');
-      const isSecOpsAdmin =
-        cleanEmail === 'admin@cybershield.ai' ||
-        cleanEmail === 'secops@trustlens.ai' ||
-        cleanEmail === 'secops@cybershield.ai' ||
-        cleanEmail === 'sec ops admin' ||
-        cleanEmail === 'secops admin' ||
-        cleanEmail === 'secops' ||
-        cleanEmail === 'admin';
-
       const demoUser: UserProfile = {
-        id: isSecOpsAdmin ? 'user-secops-admin' : `user-${Date.now()}`,
-        email: isSecOpsAdmin ? 'admin@cybershield.ai' : email,
-        fullName: isSecOpsAdmin ? 'SecOps Administrator' : email.split('@')[0],
+        id: `user-guest`,
+        email: email || 'guest@demo.local',
+        fullName: 'Guest Reviewer',
         onboardingCompleted: true,
-        role: isSecOpsAdmin || email.includes('admin') ? 'admin' : 'analyst',
+        role: 'user',
         createdAt: new Date().toISOString(),
       };
       setUser(demoUser);

@@ -82,7 +82,7 @@ export const FeedbackPage: React.FC = () => {
             <span>Community Feedback & Continuous Improvement</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Help Refine CyberShield Detection Accuracy
+            Help Refine Trust Lens Verification Accuracy
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed">
             Report false positives, missed evasion techniques, or suggestion enhancements. Your real-world feedback is reviewed by our engineering and security teams.

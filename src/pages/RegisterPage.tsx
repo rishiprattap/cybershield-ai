@@ -61,7 +61,7 @@ export const RegisterPage: React.FC = () => {
           <div className="absolute inset-0 opacity-25">
             <img
               src={ASSETS.hero}
-              alt="CyberShield Authentication Protection"
+              alt="Trust Lens Authentication Protection"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -71,7 +71,7 @@ export const RegisterPage: React.FC = () => {
               <Shield className="w-5 h-5" />
             </div>
             <span className="font-display text-lg font-bold text-white block">
-              CyberShield<span className="text-cyan-400">.AI</span>
+              Trust<span className="text-cyan-400"> Lens</span>
             </span>
           </div>
 
